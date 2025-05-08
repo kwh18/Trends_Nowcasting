@@ -1,78 +1,107 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import matplotlib.colors as mcolors
-import seaborn as sns
 import geopandas as gpd
 from shapely.geometry import Polygon
-import missingno as msno
 import os
-import wget
-import openpyxl
-import math
 
 
 def scrape_performance(states, perf_path):
-    arma_09_23 = pd.DataFrame(index=range(-30, 66, 5), columns= states)
-    arma_09_19 = pd.DataFrame(index=range(-30, 66, 5), columns= states)
-    arma_21_23 = pd.DataFrame(index=range(-30, 66, 5), columns= states)
-    dfm_mini_local_09_23 = pd.DataFrame(index=range(-30, 66, 5), columns= states)
-    dfm_mini_local_09_19 = pd.DataFrame(index=range(-30, 66, 5), columns= states)
-    dfm_mini_local_21_23 = pd.DataFrame(index=range(-30, 66, 5), columns= states)
-    dfm_mini_local_trends_09_23 = pd.DataFrame(index=range(-30, 66, 5), columns= states)
-    dfm_mini_local_trends_09_19 = pd.DataFrame(index=range(-30, 66, 5), columns= states)
-    dfm_mini_local_trends_21_23 = pd.DataFrame(index=range(-30, 66, 5), columns= states)
-    dfm_mini_local_trends_all_09_23 = pd.DataFrame(index=range(-30, 66, 5), columns= states)
-    dfm_mini_local_trends_all_09_19 = pd.DataFrame(index=range(-30, 66, 5), columns= states)
-    dfm_mini_local_trends_all_21_23 = pd.DataFrame(index=range(-30, 66, 5), columns= states)
+    arma_09_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    arma_09_19 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    arma_21_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_09_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_09_19 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_21_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_joint_09_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_joint_09_19 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_joint_21_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_trends_09_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_trends_09_19 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_trends_21_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_trends_joint_09_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_trends_joint_09_19 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_trends_joint_21_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_trends_all_09_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_trends_all_09_19 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_trends_all_21_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_trends_all_joint_09_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_trends_all_joint_09_19 = pd.DataFrame(index=range(-30,66,5), columns= states)
+    dfm_mini_local_trends_all_joint_21_23 = pd.DataFrame(index=range(-30,66,5), columns= states)
 
     for state in states:
-        arma_09_23[state] = pd.read_excel(f'{perf_path}/mini_{state}na_local/performance/Model_performance_mini_{state}na_local_200901--202312.xlsx',
+        arma_09_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local/performance/Model_performance_mini_{state.lower()}na_local_200901--202312.xlsx',
                                         sheet_name="performance", usecols="C:V",skiprows=6,nrows=1).T
-        arma_09_19[state] = pd.read_excel(f'{perf_path}/mini_{state}na_local/performance/Model_performance_mini_{state}na_local_200901--201912.xlsx',
+        arma_09_19[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local/performance/Model_performance_mini_{state.lower()}na_local_200901--201912.xlsx',
                                         sheet_name="performance", usecols="C:V",skiprows=6,nrows=1).T
-        arma_21_23[state] = pd.read_excel(f'{perf_path}/mini_{state}na_local/performance/Model_performance_mini_{state}na_local_202101--202312.xlsx',
+        arma_21_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local/performance/Model_performance_mini_{state.lower()}na_local_202101--202312.xlsx',
                                         sheet_name="performance", usecols="C:V",skiprows=6,nrows=1).T
-        dfm_mini_local_09_23[state] = pd.read_excel(f'{perf_path}/mini_{state}na_local/performance/Model_performance_mini_{state}na_local_200901--202312.xlsx',
+        dfm_mini_local_09_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local/performance/Model_performance_mini_{state.lower()}na_local_200901--202312.xlsx',
                                         sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
-        dfm_mini_local_09_19[state] = pd.read_excel(f'{perf_path}/mini_{state}na_local/performance/Model_performance_mini_{state}na_local_200901--201912.xlsx',
+        dfm_mini_local_09_19[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local/performance/Model_performance_mini_{state.lower()}na_local_200901--201912.xlsx',
                                         sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
-        dfm_mini_local_21_23[state] = pd.read_excel(f'{perf_path}/mini_{state}na_local/performance/Model_performance_mini_{state}na_local_202101--202312.xlsx',
+        dfm_mini_local_21_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local/performance/Model_performance_mini_{state.lower()}na_local_202101--202312.xlsx',
                                         sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
-        dfm_mini_local_trends_09_23[state] = pd.read_excel(f'{perf_path}/mini_{state}na_local_trends/performance/Model_performance_mini_{state}na_local_trends_200901--202312.xlsx',
+        # dfm_mini_local_joint_09_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_joint/performance/Model_performance_mini_{state.lower()}na_local_joint_200901--202312.xlsx',
+        #                                 sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
+        # dfm_mini_local_joint_09_19[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_joint/performance/Model_performance_mini_{state.lower()}na_local_joint_200901--201912.xlsx',
+        #                                 sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
+        # dfm_mini_local_joint_21_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_joint/performance/Model_performance_mini_{state.lower()}na_local_joint_202101--202312.xlsx',
+        #                                 sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
+        dfm_mini_local_trends_09_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_trends/performance/Model_performance_mini_{state.lower()}na_local_trends_200901--202312.xlsx',
                                         sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
-        dfm_mini_local_trends_09_19[state] = pd.read_excel(f'{perf_path}/mini_{state}na_local_trends/performance/Model_performance_mini_{state}na_local_trends_200901--201912.xlsx',
+        dfm_mini_local_trends_09_19[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_trends/performance/Model_performance_mini_{state.lower()}na_local_trends_200901--201912.xlsx',
                                         sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
-        dfm_mini_local_trends_21_23[state] = pd.read_excel(f'{perf_path}/mini_{state}na_local_trends/performance/Model_performance_mini_{state}na_local_trends_202101--202312.xlsx',
+        dfm_mini_local_trends_21_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_trends/performance/Model_performance_mini_{state.lower()}na_local_trends_202101--202312.xlsx',
                                         sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
-        dfm_mini_local_trends_all_09_23[state] = pd.read_excel(f'{perf_path}/mini_{state}na_local_trends_all/performance/Model_performance_mini_{state}na_local_trends_all_200901--202312.xlsx',
+        # dfm_mini_local_trends_joint_09_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_trends_joint/performance/Model_performance_mini_{state.lower()}na_local_trends_joint_200901--202312.xlsx',
+        #                                 sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
+        # dfm_mini_local_trends_joint_09_19[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_trends_joint/performance/Model_performance_mini_{state.lower()}na_local_trends_joint_200901--201912.xlsx',
+        #                                 sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
+        # dfm_mini_local_trends_joint_21_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_trends_joint/performance/Model_performance_mini_{state.lower()}na_local_trends_joint_202101--202312.xlsx',
+        #                                 sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
+        dfm_mini_local_trends_all_09_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_trends_all/performance/Model_performance_mini_{state.lower()}na_local_trends_all_200901--202312.xlsx',
                                         sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
-        dfm_mini_local_trends_all_09_19[state] = pd.read_excel(f'{perf_path}/mini_{state}na_local_trends_all/performance/Model_performance_mini_{state}na_local_trends_all_200901--201912.xlsx',
+        dfm_mini_local_trends_all_09_19[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_trends_all/performance/Model_performance_mini_{state.lower()}na_local_trends_all_200901--201912.xlsx',
                                         sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
-        dfm_mini_local_trends_all_21_23[state] = pd.read_excel(f'{perf_path}/mini_{state}na_local_trends_all/performance/Model_performance_mini_{state}na_local_trends_all_202101--202312.xlsx',
+        dfm_mini_local_trends_all_21_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_trends_all/performance/Model_performance_mini_{state.lower()}na_local_trends_all_202101--202312.xlsx',
                                         sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
+        # dfm_mini_local_trends_all_joint_09_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_trends_all_joint/performance/Model_performance_mini_{state.lower()}na_local_trends_all_joint_200901--202312.xlsx',
+        #                                 sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
+        # dfm_mini_local_trends_all_joint_09_19[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_trends_all_joint/performance/Model_performance_mini_{state.lower()}na_local_trends_all_joint_200901--201912.xlsx',
+        #                                 sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
+        # dfm_mini_local_trends_all_joint_21_23[state] = pd.read_excel(f'{perf_path}/mini_{state.lower()}na_local_trends_all_joint/performance/Model_performance_mini_{state.lower()}na_local_trends_all_joint_202101--202312.xlsx',
+        #                                 sheet_name="performance", usecols="C:V",skiprows=6,nrows=4)[3:].T
+
                 
     perf_dict = {'arma_09_23': arma_09_23, 'arma_09_19': arma_09_19, 'arma_21_23': arma_21_23,
                  'dfm_mini_local_09_23': dfm_mini_local_09_23, 'dfm_mini_local_09_19': dfm_mini_local_09_19, 'dfm_mini_local_21_23': dfm_mini_local_21_23,
+                 #'dfm_mini_local_joint_09_23': dfm_mini_local_joint_09_23, 'dfm_mini_local_joint_09_19': dfm_mini_local_joint_09_19, 'dfm_mini_local_joint_21_23': dfm_mini_local_joint_21_23,
                  'dfm_mini_local_trends_09_23': dfm_mini_local_trends_09_23, 'dfm_mini_local_trends_09_19': dfm_mini_local_trends_09_19, 'dfm_mini_local_trends_21_23': dfm_mini_local_trends_21_23,
-                 'dfm_mini_local_trends_all_09_23': dfm_mini_local_trends_all_09_23, 'dfm_mini_local_trends_all_09_19': dfm_mini_local_trends_all_09_19, 'dfm_mini_local_trends_all_21_23': dfm_mini_local_trends_all_21_23}
+                 #'dfm_mini_local_trends_joint_09_23': dfm_mini_local_trends_joint_09_23, 'dfm_mini_local_trends_joint_09_19': dfm_mini_local_trends_joint_09_19, 'dfm_mini_local_trends_joint_21_23': dfm_mini_local_trends_joint_21_23,
+                 'dfm_mini_local_trends_all_09_23': dfm_mini_local_trends_all_09_23, 'dfm_mini_local_trends_all_09_19': dfm_mini_local_trends_all_09_19, 'dfm_mini_local_trends_all_21_23': dfm_mini_local_trends_all_21_23,
+                 #'dfm_mini_local_trends_all_joint_09_23': dfm_mini_local_trends_all_joint_09_23, 'dfm_mini_local_trends_all_joint_09_19': dfm_mini_local_trends_all_joint_09_19, 'dfm_mini_local_trends_all_joint_21_23': dfm_mini_local_trends_all_joint_21_23
+                 }
 
     return perf_dict
                 
 def create_map_df(perf_dict, columns, states, offsets, time_periods):
     df = pd.DataFrame(columns=columns)
     df['state'] = states
-    models = ['arma', 'dfm_mini_local', 'dfm_mini_local_trends', 'dfm_mini_local_trends_all']
+    models = ['arma', 'dfm_mini_local', 'dfm_mini_local_joint', 'dfm_mini_local_trends', 'dfm_mini_local_trends_joint', 'dfm_mini_local_trends_all', 'dfm_mini_local_trends_all_joint']
     for model in models:
         for time_period in time_periods:
             for offset in offsets:
                 df[f'{model}{time_period}_perf_{offset}'] = perf_dict[f'{model}{time_period}'].loc[int(offset)].tolist()
                 df[f'mini_over_arma{time_period}_perf_{offset}'] = df[f'dfm_mini_local{time_period}_perf_{offset}'] - df[f'arma{time_period}_perf_{offset}']
+                #df[f'joint_over_mini{time_period}_perf_{offset}'] = df[f'dfm_mini_local_joint{time_period}_perf_{offset}'] - df[f'dfm_mini_local{time_period}_perf_{offset}']
                 df[f'trends_over_mini{time_period}_perf_{offset}'] = df[f'dfm_mini_local_trends{time_period}_perf_{offset}'] - df[f'dfm_mini_local{time_period}_perf_{offset}']
+                #df[f'joint_trends_over_trends{time_period}_perf_{offset}'] = df[f'dfm_mini_local_trends_joint{time_period}_perf_{offset}'] - df[f'dfm_mini_local_trends{time_period}_perf_{offset}']
                 df[f'all_over_trends{time_period}_perf_{offset}'] = df[f'dfm_mini_local_trends_all{time_period}_perf_{offset}'] - df[f'dfm_mini_local_trends{time_period}_perf_{offset}']
+                #df[f'joint_trends_all_over_all{time_period}_perf_{offset}'] = df[f'dfm_mini_local_trends_all_joint{time_period}_perf_{offset}'] - df[f'dfm_mini_local_trends_all{time_period}_perf_{offset}']
     
-    df.to_csv('state_performance.csv')
+    df.to_csv('state_performance_joint.csv')
     return df
 
 def merge_geospatial(df):
@@ -110,7 +139,8 @@ def plot_heatmaps(gdf, columns_to_plot, output_path):
         hfont = {'fontname':'Helvetica'}
 
         # add a title and annotation
-        ax.set_title(f'{variable}', **hfont, fontdict={'fontsize': '42', 'fontweight' : '1'})
+        # title = pretty_title(variable)
+        # ax.set_title(f'{title}', **hfont, fontdict={'fontsize': '42', 'fontweight' : '1'})
 
         # Create colorbar legend
         fig = ax.get_figure()
@@ -156,13 +186,16 @@ def plot_heatmaps(gdf, columns_to_plot, output_path):
         hawaii_gdf = gdf[gdf.state=='HI']
         hawaii_gdf.clip(hipolygon).plot(column=variable, color=hawaii_gdf['value_determined_color'], linewidth=0.8,ax=hiax, edgecolor='0.8')
 
+        print(f"Saving to: {output_path}/{variable}.png")
+        print(f"Length: {len(output_path + '/' + variable + '.png')}")
+        print(f"Variable repr: {repr(variable)}")
 
-
-        fig.savefig(f'{output_path}/{variable}.png',dpi=400, bbox_inches="tight")
+        fig.savefig(f'{output_path}/{variable}_main.png',dpi=400, bbox_inches="tight")
+        #fig.savefig(f'{output_path}/{variable}.png',dpi=400, bbox_inches="tight")
         # bbox_inches="tight" keeps the vis from getting cut off at the edges in the saved png
         # dip is "dots per inch" and controls image quality.  Many scientific journals have specifications for this
         # https://stackoverflow.com/questions/16183462/saving-images-in-python-at-a-very-high-quality
-        plt.close()
+        plt.close(fig)
 
 def makeColorColumn(gdf,variable,vmin,vmax):
     # apply a function to a column to create a new column of assigned colors & return full frame
@@ -175,18 +208,54 @@ def makeColorColumn(gdf,variable,vmin,vmax):
     gdf['value_determined_color'] = gdf[variable].apply(lambda x: mcolors.to_hex(mapper.to_rgba(x)))
     return gdf, norm
 
+def pretty_title(variable):
+    # Split string by '_'
+    parts = variable.split('_')
+
+    # Get offset at the end
+    offset = parts[-1]
+
+    # Get years before 'perf'
+    end_index = parts.index('perf')
+    years = parts[end_index - 2:end_index]  # start and end years
+    years = ['20'+ y for y in years]
+
+    # Get model type from the beginning up to the years
+    model_parts = parts[:end_index - 2]
+    model_raw = '_'.join(model_parts)
+
+    # Pretty model names
+    model_map = {
+        'arma': 'ARMA(1,1)',
+        'dfm_mini_local': 'DFM w/o Trends',
+        'dfm_mini_local_trends': 'DFM w/ Local Trends',
+        'dfm_mini_local_trends_all': 'DFM w/ Local and US Trends',
+        'mini_over_arma': 'DFM w/o Trends - ARMA(1,1)',
+        'trends_over_mini': 'DFM w/ Local Trends - DFM w/o Trends',
+        'all_over_trends': 'DFM w/ Local and US Trends - DFM w/ Local Trends'
+    }
+
+    model = model_map.get(model_raw, model_raw.upper())
+
+    # Format title
+    return f"{model} — {years[0]}–{years[1]} — Offset {offset}"
+
 
 if __name__ == '__main__':
     states = ['AK', 'AL', 'AR', 'AZ', 'CO', 'CT', 'DC', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN', 'KS', 'KY',
             'LA', 'MA', 'ME', 'MI', 'MO', 'MT', 'NC', 'NJ', 'NV', 'NY', 'OR', 'SC', 'TN', 'VA', 'WA', 'WI',
-            'CA', 'MD', 'MN', 'NE', 'NH', 'NM', 'OH', 'OK', 'PA', 'TX', 'UT'
-            #'DE', 'MS', 'ND', 'SD', 'VT', 'WY', 'RI', 'WV',
+            'CA', 'MD', 'MN', 'NE', 'NH', 'NM', 'OH', 'OK', 'PA', 'TX', 'UT',
+            'DE', 'MS', 'ND', 'SD', 'VT', 'WY', 'RI', 'WV',
             ]
     perf_dict = scrape_performance(states, 'L:/kyle/trends_nowcast/local_performance/eval_0')
 
-    models = ['arma', 'dfm_mini_local', 'dfm_mini_local_trends', 'dfm_mini_local_trends_all', 'mini_over_arma', 'trends_over_mini', 'all_over_trends']
-    offsets = [str(num) for num in range(-3., 66, 5)]
-    time_periods = ['_09_23', '_09_19', '_21_23']
+    models = ['arma', 'dfm_mini_local', 'dfm_mini_local_trends', 'dfm_mini_local_trends_all', 'mini_over_arma', 'trends_over_mini', 'all_over_trends'
+              #'dfm_mini_local_joint', 'dfm_mini_local_trends_joint', 'dfm_mini_local_trends_all_joint', 'joint_over_mini' 'joint_trends_over_trends', 'joint_trends_all_over_all'
+              ]
+    offsets = [str(20)]
+    #offsets = [str(num) for num in range(-30,66,5)]
+    time_periods = ['_09_23']
+    #time_periods = ['_09_23', '_09_19', '_21_23']
     columns = ['state']
     for model in models:
         for time_period in time_periods:
@@ -197,11 +266,15 @@ if __name__ == '__main__':
     gdf = merge_geospatial(df)
 
     columns_to_plot = []
-    #models_to_plot = ['arma', 'dfm_mini_local', 'dfm_mini_local_trends', 'dfm_mini_local_trends_all']
-    models_to_plot = ['mini_over_arma', 'trends_over_mini', 'all_over_trends']
+    models_to_plot = ['arma', 'dfm_mini_local', 'dfm_mini_local_trends', 'dfm_mini_local_trends_all', 'mini_over_arma', 'trends_over_mini', 'all_over_trends']
+    # #models_to_plot = ['mini_over_arma', 'trends_over_mini', 'all_over_trends']
+    #offsets_to_plot = [str(num) for num in range(-30,66,5)]
+    offsets_to_plot = [str(20)]
+    #time_periods_to_plot = ['_09_23', '_09_19', '_21_23']
+    time_periods_to_plot = ['_09_23']
     for model in models_to_plot:
-        for time_period in time_periods:
-            for offset in offsets:
+        for time_period in time_periods_to_plot:
+            for offset in offsets_to_plot:
                 columns_to_plot.append(model+time_period+'_perf_'+offset)
 
-    plot_heatmaps(gdf, columns_to_plot, 'C:/python_local_cd/trends_api_access/heatmaps/eval_0')
+    plot_heatmaps(gdf, columns_to_plot, 'C:/python_local_cd/Trends_Nowcasting/heatmaps/eval_0')

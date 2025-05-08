@@ -6,6 +6,7 @@ from statsmodels.tsa.seasonal import STL
 from statsmodels.multivariate.pca import PCA
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.linear_model import Ridge
+import matplotlib.pyplot as plt
 from os import path
 import pandas as pd
 import numpy as np
@@ -37,7 +38,7 @@ def get_data(new_pull:bool=True,
              end_date:str='',
              geo_codes:list=['US'],
              series:str='',
-             n_princ_comp:int=3,
+             n_princ_comp:float=.75,
              deal_with_0:str='delete_series'):
 
   if new_pull:
@@ -209,12 +210,20 @@ def seasonal_adjustment(component_folder, option):
       adjusted_df[column] = stl.trend
 
     adjusted_df.to_excel(f'{component_folder}/seasonally_adjusted_data.xlsx')
+    
 
 
 def principal_components(component_folder, geo_code, n_comp, weight_option, series):
   forecast_df = pd.read_excel(f'{component_folder}/seasonally_adjusted_data.xlsx', index_col="date")
-  n_comp = min(n_comp, len(forecast_df.columns))
+
+  var_thresh = 1
+  if n_comp<1:
+    var_thresh = n_comp
+    n_comp = len(forecast_df.columns)-1
+  else:
+    n_comp = min(n_comp, len(forecast_df.columns)-1)
   no_problem = True
+  print(f"The full list for {geo_code} is {forecast_df.columns}")
 
   if not weight_option=='none':
     if series == 'big3':
@@ -297,8 +306,59 @@ def principal_components(component_folder, geo_code, n_comp, weight_option, seri
     else:
       no_problem = False
 
-  if no_problem:          
+  if no_problem:
+    if var_thresh<1:         
+      # Get the explained variance ratios
+      explained_variance = stand_pca.eigenvals
+
+      # Calculate the percentage of total variance explained by each component
+      total_variance = np.sum(explained_variance)
+      percent_variance_explained = (explained_variance / total_variance) * 100
+
+      # Calculate cumulative percentage of variance explained
+      cumulative_percent_variance = np.cumsum(percent_variance_explained)
+
+      # Plot the percentage of variance explained and cumulative variance
+      plt.figure(figsize=(10, 6))
+
+      # Bar plot for individual variance explained
+      plt.bar(
+          range(1, len(percent_variance_explained) + 1),
+          percent_variance_explained,
+          alpha=0.7,
+          label='Percent of Variance Explained',
+      )
+
+      # Line plot for cumulative variance explained
+      plt.plot(
+          range(1, len(cumulative_percent_variance) + 1),
+          cumulative_percent_variance,
+          marker='o',
+          color='red',
+          label='Cumulative Variance Explained',
+      )
+
+      # Add labels, title, and legend
+      plt.xlabel('Number of Principal Components')
+      plt.ylabel('Percent of Total Variance Explained')
+      plt.title('Variance Explained by Principal Components')
+      plt.xticks(range(1, len(percent_variance_explained) + 1))
+      plt.legend()
+      plt.grid(alpha=0.5)
+      # Save the plot as a file
+      plt.savefig(f'{component_folder}/variance_explained_by_components.png', dpi=300, bbox_inches='tight')
+      plt.close()
+
+      # Find the position k
+      k = np.argmax(cumulative_percent_variance/100 > var_thresh) + 1  # +1 to make it 1-indexed
+
+      # Subset the factor dataframe to include only the first k components
+      princip_comp = princip_comp.iloc[:, :k]
+      n_comp = len(princip_comp.columns)
+
+
     princip_comp.to_excel(f'{component_folder}/principal_comp_{n_comp}.xlsx')
+
   else:
     print(f'Problem with principal components for component folder = {component_folder}')
 
@@ -324,47 +384,29 @@ if __name__ == '__main__':
         'gmc', 'gmc dealership', 'chrysler', 'chrysler dealership',
         'dodge', 'dodge dealership', 'jeep', 'jeep dealership']
   
-  # get_data(new_pull = False,
-  #         include_top = True,
-  #         include_rising = False,
-  #         #weight_option = 'ridge',
-  #         #weight_option = 'llf',
-  #         #lags_to_include = 3,
-  #         #lags_to_include = 6,
-  #         #lags_to_include = 12,
-  #         terms = pre_employment_terms,
-  #         parent_folder = 'pre_employment',
-  #         #start_date = '2004-01',
-  #         end_date = '2023-07',
-  #         geo_codes = ['US','US-MI'],
-  #         # geo_codes = ['US', 'US-MI', 'US-AL', 'US-AK', 'US-AZ', 'US-AR', 'US-CA', 'US-CO', 'US-CT', 'US-DE', 'US-DC', 'US-FL', 'US-GA', 'US-HI',
-  #         #               'US-ID', 'US-IL', 'US-IN', 'US-IA', 'US-KS', 'US-KY', 'US-LA', 'US-ME', 'US-MD', 'US-MA', 'US-MN', 'US-MS', 'US-MO', 'US-MT',
-  #         #               'US-NE', 'US-NV', 'US-NH', 'US-NJ', 'US-NM', 'US-NY', 'US-NC', 'US-ND', 'US-OH', 'US-OK', 'US-OR', 'US-PA', 'US-RI',
-  #         #               'US-SC', 'US-SD', 'US-TN', 'US-TX', 'US-UT', 'US-VT', 'US-VA', 'US-WA', 'US-WV', 'US-WI', 'US-WY'],       
-  #         series = 'nfp',
-  #         #series = 'new_home_sales',
-  #         #series = 'big3',
-  #         #series = 'tot_veh_sales',
-  #         #n_princ_comp = 8,
-  #         #deal_with_0 = 'create_NaN',
-  #         deal_with_0 = 'interpolate',
-  #       )
-  
-
   get_data(new_pull = True,
           include_top = True,
           include_rising = True,
-          weight_option = 'none',
-          lags_to_include = 0,
+          #weight_option = 'ridge',
+          #weight_option = 'llf',
+          #lags_to_include = 3,
+          #lags_to_include = 6,
+          #lags_to_include = 12,
           terms = pre_employment_terms,
           parent_folder = 'pre_employment',
+          #start_date = '2004-01',
           end_date = '2023-12',
-          geo_codes = ['US', 'US-MI', 'US-AL', 'US-AK', 'US-AZ', 'US-AR', 'US-CA', 'US-CO', 'US-CT', 'US-DE', 'US-DC', 'US-FL', 'US-GA',
-                        'US-HI', 'US-ID', 'US-IL', 'US-IN', 'US-IA', 'US-KS', 'US-KY', 'US-LA', 'US-ME', 'US-MD', 'US-MA', 'US-MN', 'US-MS', 'US-MO', 'US-MT',
+          # geo_codes = ['US','US-MI'],
+          geo_codes = ['US', 'US-MI', 'US-AL', 'US-AK', 'US-AZ', 'US-AR', 'US-CA', 'US-CO', 'US-CT', 'US-DE', 'US-DC', 'US-FL', 'US-GA', 'US-HI',
+                        'US-ID', 'US-IL', 'US-IN', 'US-IA', 'US-KS', 'US-KY', 'US-LA', 'US-ME', 'US-MD', 'US-MA', 'US-MN', 'US-MS', 'US-MO', 'US-MT',
                         'US-NE', 'US-NV', 'US-NH', 'US-NJ', 'US-NM', 'US-NY', 'US-NC', 'US-ND', 'US-OH', 'US-OK', 'US-OR', 'US-PA', 'US-RI',
-                        'US-SC', 'US-SD', 'US-TN', 'US-TX', 'US-UT', 'US-VT', 'US-VA', 'US-WA', 'US-WV', 'US-WI', 'US-WY'],   
-          # geo_codes = ['US', 'US-MI', 'US-CA', 'US-LA', 'US-NC', 'US-UT'],       
+                        'US-SC', 'US-SD', 'US-TN', 'US-TX', 'US-UT', 'US-VT', 'US-VA', 'US-WA', 'US-WV', 'US-WI', 'US-WY'],       
           series = 'nfp',
-          deal_with_0 = 'delete_series',
+          #series = 'new_home_sales',
+          #series = 'big3',
+          #series = 'tot_veh_sales',
+          #n_princ_comp = 3, # If equal to integer, returns that many PCs
+          #n_princ_comp = .75, # If n<1, returns the smallest number of PCs that explains 100*n% of total variance
+          #deal_with_0 = 'create_NaN',
+          #deal_with_0 = 'interpolate',
         )
-
